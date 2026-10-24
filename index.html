@@ -125,15 +125,27 @@ try{
   if(!TOK){me=null;role=null}
 }catch(x){}
 
-// الاتصال بقاعدة بيانات المنصة
-async function api(path,method,body){
-  var o={method:method||"GET",headers:{}};
-  if(TOK)o.headers["Authorization"]="Bearer "+TOK;
-  if(body!==undefined){o.headers["Content-Type"]="application/json";o.body=JSON.stringify(body)}
-  var r=await fetch("/api/"+path,o);
-  var d=await r.json().catch(function(){return {}});
-  if(r.status===401&&path!=="login"&&TOK){endSession();draw();toast("انتهت الجلسة، سجّلي الدخول مرة أخرى")}
-  if(!r.ok){var er=new Error(d.error||"error");er.status=r.status;throw er}
+// الاتصال المباشر بقاعدة بيانات المنصة عبر سكريبت قوقل
+async function api(path, method, body) {
+  var GAS_URL = "https://script.google.com/macros/s/AKfycbyXcatqK3IedJdqLajjw4E7pSXo5qrqIvs9JuDi77NwekQe_e8fw-o50K_xLx97pz3c/exec?path=" + encodeURIComponent(path);
+  var o = { method: method || "GET", headers: {} };
+  if (TOK) o.headers["Authorization"] = "Bearer " + TOK;
+  if (body !== undefined) {
+    o.headers["Content-Type"] = "application/json";
+    o.body = JSON.stringify(body);
+  }
+  var r = await fetch(GAS_URL, o);
+  var d = await r.json().catch(function() { return {}; });
+  if (r.status === 401 && path !== "login" && TOK) { 
+    endSession(); 
+    draw(); 
+    toast("انتهت الجلسة، سجّلي الدخول مرة أخرى"); 
+  }
+  if (!r.ok) { 
+    var er = new Error(d.error || "error"); 
+    er.status = r.status; 
+    throw er; 
+  }
   return d;
 }
 function startSession(d){TOK=d.token;me=d.me;role=d.role;try{localStorage.setItem("tok",TOK)}catch(x){}svS()}
